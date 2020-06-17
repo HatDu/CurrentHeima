@@ -4,37 +4,36 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-@Slf4j(topic = "Test22_Interrrupt")
-public class Test22_Interrrupt {
-
+@Slf4j
+public class Test23_Interrupt2 {
     public static void main(String[] args) {
         ReentrantLock lock = new ReentrantLock();
         Thread t1 = new Thread(() -> {
+            log.debug("启动...");
             try {
-                // 如果没有竞争，那么机会获取Lock对象
-                // 如果有竞争就会进入阻塞队列，可以被其他线程用interrupt打断
                 lock.lockInterruptibly();
-                log.debug("t1获得到了锁");
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
-                log.debug("在等待过程中被打断");
+                log.debug("等锁的过程中被打断");
+                return;
+            }
+            try {
+                log.debug("获得了锁");
+            } finally {
+                lock.unlock();
             }
         }, "t1");
-
         lock.lock();
         log.debug("获得了锁");
         t1.start();
         try {
-            Thread.sleep(1);
+            Thread.sleep(1000);
             t1.interrupt();
-
             log.debug("执行打断");
-            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             lock.unlock();
-            log.debug("释放了锁");
         }
     }
 }
